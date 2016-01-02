@@ -47,13 +47,13 @@ void print_binary(char *sz, long size) {
     int each_line = 4;
     int i;
     printf("file size:   %4lu bytes\n", size);
-    printf("each line:   %4d bytes\n", each_line*sizeof(gcov_unsigned_t));
-    printf("word length: %4d bytes\n", sizeof(gcov_unsigned_t));
-    printf("file block:  %4d (each line has %d blocks)\n", size/sizeof(gcov_unsigned_t), each_line);
+    printf("each line:   %4lu bytes\n", each_line*sizeof(gcov_unsigned_t));
+    printf("word length: %4lu bytes\n", sizeof(gcov_unsigned_t));
+    printf("file block:  %4lu (each line has %d blocks)\n", size/sizeof(gcov_unsigned_t), each_line);
     for (i = 0; i < (size/sizeof(gcov_unsigned_t)); i++) {
         if (i % each_line == 0 ) {
             printf("\n");
-            printf("[%04d]%08d: ", i, i*(sizeof(gcov_unsigned_t)));
+            printf("[%04d]%08lu: ", i, i*(sizeof(gcov_unsigned_t)));
         }
         printf("%08x ", *(ptr+i));
     }
@@ -102,8 +102,8 @@ void print_info(gcov_info *gcda_list) {
 
 
 static void print_program(program_summary pro) {
-    printf("num     :    %ld\n", pro.num);
-    printf("runs    :    %ld\n", pro.runs);
+    printf("num     :    %u\n", pro.num);
+    printf("runs    :    %u\n", pro.runs);
     printf("sum_all :    %08x %08x\n", (gcov_unsigned_t)pro.sum_all, (gcov_unsigned_t)(pro.sum_all >> 32));
     printf("run_max :    %08x %08x\n", (gcov_unsigned_t)pro.run_max, (gcov_unsigned_t)(pro.run_max >> 32));
     printf("sum_max :    %08x %08x\n", (gcov_unsigned_t)pro.sum_max, (gcov_unsigned_t)(pro.sum_max >> 32));
@@ -180,7 +180,7 @@ static int read_buf(char *file, long *file_size, char **file_buf) {
         return ERROR_CLOSE_FILE;
     }
 
-    print_debug(DEBUG, "read_buf::file_name: %s, file_size: %d\n", file, *file_size);
+    print_debug(DEBUG, "read_buf::file_name: %s, file_size: %ld\n", file, *file_size);
     return 0;
 }
 
@@ -345,9 +345,9 @@ static void gcov_add_ctr(gcov_type *t_ctr, gcov_type *n_ctr) {
         value = 0;
     }
     value += *t + *n;
-    print_debug(DEBUG, "t_ctr: %016x\n", *t_ctr);
-    print_debug(DEBUG, "n_ctr: %016x\n", *n_ctr);
-    print_debug(DEBUG, "value: %016x\n", value);
+    print_debug(DEBUG, "t_ctr: %016llx\n", *t_ctr);
+    print_debug(DEBUG, "n_ctr: %016llx\n", *n_ctr);
+    print_debug(DEBUG, "value: %016llx\n", value);
 
     *t = (gcov_unsigned_t)value;
     if (sizeof(gcov_type) > sizeof(gcov_unsigned_t)) {
@@ -668,7 +668,7 @@ static int read_graph_file (gcov_info *node) {
             unsigned num_dests = (*(ptr->length) - 1)/2;
 
             if (src >= fn->num_blocks || fn->blocks[src].succ) {
-                print_debug(ERROR, "arcs error. src: %d, blocknum: %d, succ: %s\n", src, fn->num_blocks, fn->blocks[src].succ);
+                print_debug(ERROR, "arcs error. src: %u, blocknum: %u, succ_count: %llu\n", src, fn->num_blocks, fn->blocks[src].succ->count);
                 return ERROR_GCNO_FORMAT;
             }
 
@@ -899,11 +899,11 @@ static int read_count_file (gcov_info *node) {
 
             gcov_read_ctr(&t_ctr.sum_max, ptr->record + offset);
 
-            print_debug(DEBUG, "num:        %ld\n", t_ctr.num);
-            print_debug(DEBUG, "runs:       %ld\n", t_ctr.runs);
-            print_debug(DEBUG, "sum_all:    %lld\n", gcov_get_ctr(&t_ctr.sum_all));
-            print_debug(DEBUG, "run_max:    %lld\n", gcov_get_ctr(&t_ctr.run_max));
-            print_debug(DEBUG, "sum_max:    %lld\n", gcov_get_ctr(&t_ctr.sum_max));
+            print_debug(DEBUG, "num:        %u\n", t_ctr.num);
+            print_debug(DEBUG, "runs:       %u\n", t_ctr.runs);
+            print_debug(DEBUG, "sum_all:    %llu\n", gcov_get_ctr(&t_ctr.sum_all));
+            print_debug(DEBUG, "run_max:    %llu\n", gcov_get_ctr(&t_ctr.run_max));
+            print_debug(DEBUG, "sum_max:    %llu\n", gcov_get_ctr(&t_ctr.sum_max));
 
         } else if (tag == GCOV_TAG_PROGRAM_SUMMARY) {
             print_debug(DEBUG, "GCOV_TAG_PROGRAM_SUMMARY:\n");
@@ -923,11 +923,11 @@ static int read_count_file (gcov_info *node) {
 
             gcov_read_ctr(&t_ctr.sum_max, ptr->record + offset);
 
-            print_debug(DEBUG, "num:        %ld\n", t_ctr.num);
-            print_debug(DEBUG, "runs:       %ld\n", t_ctr.runs);
-            print_debug(DEBUG, "sum_all:    %lld\n", gcov_get_ctr(&t_ctr.sum_all));
-            print_debug(DEBUG, "run_max:    %lld\n", gcov_get_ctr(&t_ctr.run_max));
-            print_debug(DEBUG, "sum_max:    %lld\n", gcov_get_ctr(&t_ctr.sum_max));
+            print_debug(DEBUG, "num:        %u\n", t_ctr.num);
+            print_debug(DEBUG, "runs:       %u\n", t_ctr.runs);
+            print_debug(DEBUG, "sum_all:    %llu\n", gcov_get_ctr(&t_ctr.sum_all));
+            print_debug(DEBUG, "run_max:    %llu\n", gcov_get_ctr(&t_ctr.run_max));
+            print_debug(DEBUG, "sum_max:    %llu\n", gcov_get_ctr(&t_ctr.sum_max));
 
         } else {
             print_debug(ERROR, "UNKNOWN TAG: %08x\n", tag);
@@ -1267,8 +1267,8 @@ void usage(char *exec_name)
 
 
 void global_init() {
-    print_debug(DEBUG, "gcov_unsigned_t: %d\n", sizeof(gcov_unsigned_t));
-    print_debug(DEBUG, "gcov_type:       %d\n", sizeof(gcov_type));
+    print_debug(DEBUG, "gcov_unsigned_t: %lu\n", sizeof(gcov_unsigned_t));
+    print_debug(DEBUG, "gcov_type:       %lu\n", sizeof(gcov_type));
     memset(&global_summary, 0, sizeof(global_summary));
 
 }
